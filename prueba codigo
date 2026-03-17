@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Neoclasicismo y Romanticismo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .progress {
+            text-align: right;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        .question-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button.option-btn {
+            padding: 15px;
+            font-size: 1em;
+            text-align: left;
+            background-color: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button.option-btn:hover:not(:disabled) {
+            background-color: #d5dbdb;
+        }
+        button.option-btn:disabled {
+            cursor: not-allowed;
+        }
+        button.option-btn.correct {
+            background-color: #2ecc71;
+            color: white;
+            border-color: #27ae60;
+        }
+        button.option-btn.incorrect {
+            background-color: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .feedback.show {
+            display: block;
+        }
+        .feedback.success { background-color: #d5f5e3; color: #145a32; }
+        .feedback.error { background-color: #fadbd8; color: #7b241c; }
+        
+        button#next-btn, button#restart-btn {
+            display: none;
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+        }
+        button#next-btn:hover, button#restart-btn:hover {
+            background-color: #2980b9;
+        }
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+        #result-screen {
+            display: none;
+            text-align: center;
+        }
+        .score { font-size: 2em; font-weight: bold; color: #2c3e50; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container clearfix">
+    <h1>Prueba: Neoclasicismo y Romanticismo</h1>
+    
+    <div id="quiz-screen">
+        <div class="progress" id="progress-text">Pregunta 1 de 30</div>
+        <div class="question-text" id="question-text"></div>
+        <div class="options" id="options-container"></div>
+        
+        <div id="feedback-box" class="feedback">
+            <strong id="feedback-title"></strong>
+            <p id="feedback-rationale"></p>
+        </div>
+        
+        <button id="next-btn">Siguiente Pregunta</button>
+    </div>
+
+    <div id="result-screen">
+        <h2>¡Test Completado!</h2>
+        <p>Aquí está tu resultado final:</p>
+        <div class="score" id="final-score"></div>
+        <button id="restart-btn" style="display: inline-block; float: none;">Volver a intentar</button>
+    </div>
+</div>
+
+<script>
+    // La base de datos de las 30 preguntas
+    const questions = [
+        { q: "¿En qué período histórico se desarrolló principalmente el Neoclasicismo?", options: ["1770 - 1830", "1850 - 1860", "1600 - 1700", "1800 - 1900"], answer: 0, rationale: "El texto indica que el Neoclasicismo se enmarca entre 1770 y 1830." },
+        { q: "El Neoclasicismo nace como una respuesta directa a la exageración de otro estilo artístico previo. ¿A cuál?", options: ["Al Renacimiento", "Al Barroco", "Al Gótico", "Al Romanticismo"], answer: 1, rationale: "El texto explica claramente que nace en respuesta al arte exagerado del Barroco." },
+        { q: "¿Quién es el autor de la escultura 'Psique reanimada por el beso del amor'?", options: ["Jacques-Louis David", "Antonio Canova", "William Blake", "Francisco de Goya"], answer: 1, rationale: "La presentación atribuye directamente esta emblemática obra neoclásica a Antonio Canova." },
+        { q: "¿A qué artista pertenece el famoso cuadro 'El juramento de los Horacios' (1784–85)?", options: ["Jacques-Louis David", "Francesco Hayez", "Caspar David Friedrich", "Karl Friedrich Schinkel"], answer: 0, rationale: "Esta icónica pintura neoclásica es obra del francés Jacques-Louis David." },
+        { q: "Cuando le preguntaron a Franz Liszt cuál era su profesión, ¿qué respondió el maestro?", options: ["'Soy un creador de universos'", "'Mi profesión, amigo, es desatar tormentas'", "'Vivir lleno de contradicciones'", "'Soy un imitador de la naturaleza'"], answer: 1, rationale: "Esta es la frase exacta citada, mostrando el apasionado espíritu romántico." },
+        { q: "¿Quién pintó la obra 'Catedral gótica junto al agua'?", options: ["Leonardo Alenza", "Karl Friedrich Schinkel", "Caspar David Friedrich", "John Collier"], answer: 1, rationale: "La presentación vincula a Schinkel explícitamente con esta pintura." },
+        { q: "De acuerdo al cuadro comparativo, ¿cuál es una característica fundamental del Neoclasicismo?", options: ["Rechaza la cultura antigua", "Fomenta la individualidad", "Predominio del sentimiento", "Busca la uniformidad igualitaria"], answer: 3, rationale: "El cuadro indica claramente que el Neoclasicismo busca esta uniformidad." },
+        { q: "Según el texto comparativo, ¿qué actitud tiene el Romanticismo respecto a la cultura antigua?", options: ["La imita fervientemente", "La rechaza", "La moderniza con reglas poéticas", "Busca uniformidad en sus mitos"], answer: 1, rationale: "El cuadro comparativo señala que el Romanticismo rechaza la cultura antigua grecorromana." },
+        { q: "¿En qué décadas alcanza su mayor dominio histórico el Romanticismo en Europa?", options: ["1770 - 1800", "1850 - 1860", "1890 - 1910", "1650 - 1700"], answer: 1, rationale: "El documento especifica que su dominio alcanza hasta los años 1850-1860." },
+        { q: "¿Qué obra de Francisco de Goya aparece en la presentación?", options: ["Saturno devorando a su hijo", "El caminante sobre el mar de nubes", "Sátira del suicidio romántico", "El beso"], answer: 0, rationale: "Se menciona esta obra y luego también 'El coloso', pero 'Saturno' es explícitamente nombrada primero en la diapositiva." },
+        { q: "Según la PPT, ¿qué significa 'ser romántico'?", options: ["Vivir guiado puramente por la razón y el intelecto", "Vivir una existencia plena de contradicciones", "Renunciar a los sentimientos para alcanzar la serenidad", "Conformarse con el mundo real exterior"], answer: 1, rationale: "El texto dice: 'Ser romántico significa vivir una existencia plena de contradicciones entre lo que se anhela y lo que se posee...'" },
+        { q: "¿Quién es el autor de la célebre obra 'El caminante sobre el mar de nubes' (1817–1818)?", options: ["Dante Gabriel Rossetti", "William Blake", "Caspar David Friedrich", "John William Waterhouse"], answer: 2, rationale: "Se indica explícitamente que este artista pintó al famoso caminante dando la espalda." },
+        { q: "¿Cuál de las siguientes opciones es uno de los 'Rasgos de lo romántico' listados en el documento?", options: ["La angustia metafísica", "El estatismo y la calma total", "La dependencia de la razón", "El desprecio por el 'yo'"], answer: 0, rationale: "Este rasgo aparece textualmente junto a la melancolía y la libertad." },
+        { q: "¿En qué año se pintó el cuadro 'El beso' de Francesco Hayez?", options: ["1817", "1839", "1859", "1881"], answer: 2, rationale: "La diapositiva menciona 'El beso- Francesco Hayez, 1859'." },
+        { q: "Según la infografía, ¿dónde nació el poeta Gustavo Adolfo Bécquer en 1836?", options: ["En Madrid", "En Sevilla", "En Barcelona", "En Londres"], answer: 1, rationale: "La biografía detalla claramente que Bécquer nació en Sevilla, España." },
+        { q: "¿Cuántos poemas escribió Gustavo Adolfo Bécquer durante su vida?", options: ["12 poemas", "86 poemas", "181 poemas", "50 poemas"], answer: 1, rationale: "El cuadro rojo de la infografía destaca que escribió 86 poemas." },
+        { q: "¿Cómo se tituló el primer poema que escribió Bécquer a los 12 años de edad?", options: ["Rimas y Leyendas", "Oda a la muerte de don Alberto Lista", "Volverán las oscuras golondrinas", "Estrellas gemelas"], answer: 1, rationale: "La infografía señala que este fue su primer poema." },
+        { q: "¿Cuáles son los temas principales de la obra de Bécquer?", options: ["El desamor, la poesía, las relaciones humanas y la muerte", "La guerra, el heroísmo, la venganza y la razón", "El campo, los animales, el trabajo y el progreso", "El suicidio y la tuberculosis"], answer: 0, rationale: "Estos son exactamente los temas listados en la infografía del autor." },
+        { q: "¿A qué poema de Bécquer pertenece el verso 'Volverán las oscuras golondrinas'?", options: ["Rima XXXVII", "Rima LIII", "Oda a don Alberto Lista", "Leyendas oscuras"], answer: 1, rationale: "Este célebre verso marca el inicio de la Rima LIII." },
+        { q: "¿Cuáles son los motivos líricos centrales que se analizan de la Rima XXXVII?", options: ["El amor desgraciado y la muerte", "La alegría y el renacimiento", "El desamor y la naturaleza primaveral", "La religión y el patriotismo"], answer: 0, rationale: "La diapositiva lo expone claramente: 'Motivos líricos... el amor desgraciado y la muerte, como una fuerza inevitable...'" },
+        { q: "¿En qué países se originó paralelamente el movimiento romántico?", options: ["Francia e Italia", "Alemania y el Reino Unido", "España y Portugal", "Rusia y Grecia"], answer: 1, rationale: "El texto detalla que surge allí cuando un grupo de personas se hartan de tanto racionalismo." },
+        { q: "¿Qué motivó a que los pensadores dieran origen al Romanticismo en sus países de origen?", options: ["Estaban fascinados por la exactitud de las ciencias", "Estaban hartos de tanto racionalismo e ilustración", "Buscaban imitar a los artistas barrocos del pasado", "Querían fomentar reglas más estrictas para el arte"], answer: 1, rationale: "Es la causa exacta que señala la diapositiva sobre su origen." },
+        { q: "Para los románticos, ¿cómo es verdaderamente el mundo?", options: ["Plano, racional y sin sorpresas", "Sereno, intelectual y equilibrado", "Irracional, lleno de sentimientos y de imperfecciones", "Oscuro, carente de cualquier tipo de espiritualidad"], answer: 2, rationale: "Así se describe la cosmovisión romántica en el texto: 'El mundo es más bien lo contrario... irracional'." },
+        { q: "¿Quién es el autor de la pintura 'El coloso' (1812)?", options: ["Antonio Canova", "William Blake", "Francisco de Goya", "Jacques-Louis David"], answer: 2, rationale: "El PPT vincula explícitamente a Goya con 'El coloso'." },
+        { q: "Al exaltar las tradiciones nacionales y el individualismo en cada país, ¿qué movimiento político e ideológico comenzó en Europa gracias al Romanticismo?", options: ["El imperialismo", "Los nacionalismos", "La Ilustración", "El globalismo"], answer: 1, rationale: "El texto aclara: 'Sí… Aquí empiezan los nacionalismos en Europa'." },
+        { q: "¿Qué periodo histórico generó culto y profunda admiración entre los artistas románticos?", options: ["La Edad Antigua Clásica (Grecorromana)", "La Edad Contemporánea", "El Renacimiento", "La Edad Media (y sus ruinas)"], answer: 3, rationale: "El documento menciona: 'nace un culto a la Edad Media, o mejor aún: sus ruinas'." },
+        { q: "¿Cómo es visto el papel del artista durante el surgimiento del Romanticismo?", options: ["Como un imitador fiel de la naturaleza", "Como un simple operario que sigue reglas estrictas", "Como genio, como creador, como Dios", "Como un servidor ciego del rey"], answer: 2, rationale: "La frase aparece de esta forma literal en la presentación para exaltar su rol." },
+        { q: "En la cultura del romanticismo se valoraba tanto la rebeldía que, trágicamente, se puso de moda un fin específico para la vida. ¿De qué se trataba?", options: ["Alcanzar una vejez sabia en la montaña", "Suicidarse de amor o morir joven de tuberculosis", "Morir en combate defendiendo la razón", "Desaparecer sin dejar rastro en el mar"], answer: 1, rationale: "La presentación señala que 'Un buen romántico debería morir joven', incluso de tuberculosis." },
+        { q: "En el Romanticismo los paisajes se vuelven un género mayor para mostrar emociones. ¿Cuáles son las dos vertientes principales de estos paisajes?", options: ["Lo histórico y lo topográfico", "Lo pintoresco y lo sublime", "Lo geométrico y lo abstracto", "Lo oscuro y lo iluminado"], answer: 1, rationale: "La diapositiva menciona que las emociones humanas se muestran a través de estas dos vertientes." },
+        { q: "¿Quién es el creador de la ilustración titulada 'El anciano de los días'?", options: ["John Collier", "Dante Gabriel Rossetti", "William Blake", "Leonardo Alenza"], answer: 2, rationale: "La última obra pictórica mencionada en los extractos de la presentación es atribuida a él." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    // Elementos del DOM
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const progressText = document.getElementById('progress-text');
+    const feedbackBox = document.getElementById('feedback-box');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackRationale = document.getElementById('feedback-rationale');
+    const nextBtn = document.getElementById('next-btn');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const finalScoreText = document.getElementById('final-score');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function loadQuestion() {
+        const currentQ = questions[currentQuestionIndex];
+        questionText.textContent = currentQ.q;
+        progressText.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+        optionsContainer.innerHTML = '';
+        
+        // Ocultar feedback y botón siguiente
+        feedbackBox.className = 'feedback';
+        nextBtn.style.display = 'none';
+
+        currentQ.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = option;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIndex, selectedBtn) {
+        const currentQ = questions[currentQuestionIndex];
+        const allButtons = optionsContainer.querySelectorAll('button');
+        
+        // Deshabilitar botones
+        allButtons.forEach(btn => btn.disabled = true);
+
+        if (selectedIndex === currentQ.answer) {
+            selectedBtn.classList.add('correct');
+            score++;
+            showFeedback(true, currentQ.rationale);
+        } else {
+            selectedBtn.classList.add('incorrect');
+            // Resaltar la correcta
+            allButtons[currentQ.answer].classList.add('correct');
+            showFeedback(false, currentQ.rationale);
+        }
+        
+        nextBtn.style.display = 'block';
+    }
+
+    function showFeedback(isCorrect, rationale) {
+        feedbackBox.classList.add('show');
+        if (isCorrect) {
+            feedbackBox.classList.add('success');
+            feedbackTitle.textContent = "¡Correcto!";
+        } else {
+            feedbackBox.classList.add('error');
+            feedbackTitle.textContent = "Incorrecto.";
+        }
+        feedbackRationale.textContent = rationale;
+    }
+
+    nextBtn.onclick = () => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    };
+
+    function showResults() {
+        quizScreen.style.display = 'none';
+        resultScreen.style.display = 'block';
+        finalScoreText.textContent = `${score} / ${questions.length}`;
+    }
+
+    restartBtn.onclick = () => {
+        currentQuestionIndex = 0;
+        score = 0;
+        quizScreen.style.display = 'block';
+        resultScreen.style.display = 'none';
+        loadQuestion();
+    };
+
+    // Iniciar test
+    loadQuestion();
+</script>
+
+</body>
+</html>
